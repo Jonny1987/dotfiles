@@ -1,0 +1,115 @@
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	required = true
+	process = git-lfs filter-process
+[user]
+	name = Jonny1987
+	email = jrshannie@yahoo.com
+[push]
+	default = simple
+[log]
+	decorate = short
+[alias]
+	############ COMMON OPERATIONS ###########
+	###########################################
+
+	co = checkout
+	cb = "!f() { git checkout $1 || git checkout -b $1 ; }; f"
+	st = status
+	ci = commit
+	br = branch
+	mrg = merge --no-edit
+	pu = push -u origin
+	spu = "!s() { git sfg pu $(git curbr); }; s"
+	coft = !git co B_FeatureTest	
+	# create a branch from the current branch, or from $2, on current submodule and switch to it
+	mkb = "!m() { if [ $# -eq 2 ]; then git checkout $2; fi; git checkout -b $1 && git pu $1; }; m"
+
+	# create a branch as above for all submodules
+	mka = !git sfg mkb
+	
+	# loop through all submodules
+	sfe = "!s() { (git rev-parse --show-toplevel && git submodule foreach --quiet --recursive pwd) | parallel --gnu --tagstring {/}: --keep-order --joblog .git_parallel.log \"cd {}; unbuffer $@;\"; echo -n '\\033[31mFAILED:\\033[m '; awk 'NR > 1 && $7 != 0 {system(\"basename \" $10)}' .git_parallel.log | tr '\n' ' '; echo ''; }; s"
+	
+	# loop through without needing to use 'git'
+	sfg = !git sfe git --no-pager
+	
+	# pull super and 
+	gpul = "!g() { cd $(git proj) && git pull --no-edit && git sfg pull --no-edit; }; g"
+
+	# update submodules and checkout the branch specified
+	# subup = "!s() { cd $(git rev-parse --show-toplevel | sed -r 's/(git\/[^\/]*)\/.*/\1/') && git pull && git submodule update --init && sfg co $(git rev-parse --abbrev-ref HEAD); }; s"
+
+	################ ADDING, STAGING AND COMMITTING #################
+	#################################################################
+
+	# Add files from diff using regex eg gadd '.*_mixins.scss'
+	gadd = "!g() { git gdif $1 | xargs git add; }; g"
+	
+	# Open files from diff in sublime using regex 
+	subd = "!s() { git gdif $1 | xargs subl -n; }; s"
+	
+	# Search the diff using regex on the file path
+	gdif = "!g() { if [ $# -eq 1 ]; then git diff --name-only --relative | uniq | ack $1; else git diff --name-only --relative | uniq; fi; }; g"
+	
+	devel = "!g() { start=$(pwd); for d in $(find $start/static/ -maxdepth 1 -type d -regex '.*mobile' -o -regex '.*desktop'); do (first=$(ls -t1 | head -n1 | ) && first${first%/} && cd $d && make realclean && cd $first && make devel && cd .. && find -maxdepth 1 -type d -not -path $first ) | parallel --gnu --tagstring {/}: --keep-order --joblog .git_parallel.log \"cd {}; unbuffer $@;\"; echo -n '\\033[31mFAILED:\\033[m '; awk 'NR > 1 && $7 != 0 {system(\"echo \" $10)}' .git_parallel.log | tr '\n' ' '; echo ''; done; }; g"
+	
+	# devel with summary - WOROK IN PROGRESS
+	devel2 = "!g() { start=$(pwd); for d in $(find $start/static/ -maxdepth 1 -type d -regex '.*mobile' -o -regex '.*desktop'); do cd $d && make realclean && first=$(ls -t1 | head -n1) && first=${first%/} && cd $first && pwd && make devel && cd ..; done; }; g"
+
+	################ STASHING #################
+	###########################################
+
+	# stash when in super module to avoid stashing submodule changes. This doesn't need to be used if diff.ignoresubmodules is set to 'all', but this is not a good idea because then it is easy to forget that there are submodule changes and do 'git add .', which will stage those changes without you even knowing! 
+	supstash = "!s() { git config diff.ignoresubmodules all && git stash; git config diff.ignoresubmodules none; }; s"
+
+	# stash based on regex or filename, optional second argument for commit message
+	gstash = "!g() { if [ $# -lt 2 ]; then save=""; else save=$2; fi; if [ $# -lt 1 ]; then ackregex=".*"; else ackregex=$1; fi; git diff -u --name-only | ack $ackregex | xargs git add > /dev/null && git ci -m "temp" > /dev/null && git stash -u > /dev/null && git reset --soft HEAD~ > /dev/null && git stash save $save > /dev/null && git stash apply stash@{1} > /dev/null && git stash drop stash@{1} > /dev/null ; }; g"
+	
+	################ BRANCH OR DIRECTORY NAVIATION #################
+	################################################################
+
+	# checks out the previous branch
+	pb = "!git co @{-1}"
+
+	# current project base
+	#proj = "!p() { pwd; }; p"
+	
+	#current branch on current module
+	curbr = rev-parse --abbrev-ref HEAD
+	
+	# List what the current branch on each submodule
+	cbr = !git sfg curbr
+	
+	################ COMMITS NAVIGATION #################
+	#####################################################
+
+	# Show branches that are unpushed or pushed ie. behind or ahead of the remote
+	unpus = log @{u}..
+	unpul = log ..@{u}
+
+	# Show which branches on which modules have not been merged into B_CI
+	nomrgci = "!n() { sfg 'br --no-merged B_CI | ack $(!git curbr)'; }; n"
+
+	# searches for a regex and displays the blame info for each line found
+	gblame = "!g() { current_file=''; git grep -n \"$1\" | while IFS=: read i j k; do if [ \"$i\" != \"$current_file\" ]; then echo '\n'\"$i\"; current_file=\"$i\"; fi; echo '\t'$(git --no-pager blame -L $j,$j $i); done; }; g"
+
+	# isolates on lines in git log with changes using regex to search changes, and optional specifying of number of lines before and after to display. eg. git glog 'something' 2 3
+	glog = "!g() { git log --color -p -m -S$1 -- ${2-""} | ack --nocolor -B ${getopts B} -A ${getopts B} "$1'|commit [0-9a-z]{40}'" | less -R; }; g"
+
+	# Show what my current branch looks like in relation to upstream
+	bst = !git branch -vv --list $(git rev-parse --abbrev-ref HEAD)
+	
+	logclip = "!l() { git log $@ && git log --format='%H' $@ | sed \"s%$% $(basename $(git rev-parse --show-toplevel))/$(git rev-parse --abbrev-ref HEAD)%\" | xclip -selection \"clipboard\"; }; l"
+	
+[merge]
+        tool = mymeld
+[mergetool "mymeld"]
+	cmd = /home/jshanaha/bin/mymeld $BASE $LOCAL $REMOTE $MERGED
+[color]
+	ui = true
+[diff]
+	ignoresubmodules = none
+[core]
+	excludesFile = /home/jshanaha/.globalgitignore
