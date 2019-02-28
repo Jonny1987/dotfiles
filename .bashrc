@@ -82,7 +82,7 @@ fi
 
 ############################ GAMBLING ###########################
 ###################################################################
-alias autoclick="~/autoclicker.sh > /dev/null"
+alias autoclick="~/autoclicker/autoclicker.sh"
 
 ############################ NETWORK ###########################
 ###################################################################
@@ -92,7 +92,7 @@ ifport() {
 }
 
 nsport() {
-    sudo ip netns exec $1 udevadm info -p /sys/class/net/$1 | head -n 1 | cut -d"/" -f 7
+    sudo ip netns exec $1 udevadm info -p /sys/class/net/eth1 | head -n 1 | cut -d"/" -f 7
 }
     
 rebind() {
@@ -104,10 +104,21 @@ ifrebind() {
 }
 
 nsrebind() {
-    sudo ip netns exec "echo $1 | sudo tee /sys/bus/usb/drivers/usb/unbind && echo $1 | sudo tee /sys/bus/usb/drivers/usb/bind"
+    port=$(sudo ip netns exec $1 udevadm info -p /sys/class/net/eth1 | head -n 1 | cut -d'/' -f 7)
+    echo $port | sudo tee /sys/bus/usb/drivers/usb/unbind && echo $port | sudo tee /sys/bus/usb/drivers/usb/bind
 }
 
-nschrome() {
+lastrebind() {
+    last_ns=$(sudo docker ps -l --format='{{.Names}}' | cut -d'-' -f 2)
+    nsrebind $last_ns
+}
+
+lastport() {
+    last_ns=$(sudo docker ps -l --format='{{.Names}}' | cut -d'-' -f 2)
+    nsport $last_ns
+}
+
+loadwp() {
     webpage=$1
     containers=sudo docker ps --format='{{.Names}}'
     for container in $containers
@@ -119,6 +130,32 @@ nschrome() {
 nextwp() {
     webpage=$1
     declare -p webpage | sudo tee /usr/local/bin/webpage > /dev/null
+}
+
+rulesoff() {
+    rules_file=/etc/udev/rules.d/1-physical-netns.rules
+    first_char=$(head -c 1 $rules_file)
+    if [ $first_char != "#" ]
+    then
+        sudo sed -i '1s/^/#/' /etc/udev/rules.d/1-physical-netns.rules
+    fi
+}
+
+ruleson() {
+    rules_file=/etc/udev/rules.d/1-physical-netns.rules
+    first_char=$(head -c 1 $rules_file)
+    if [ $first_char == "#" ]
+    then
+        sudo sed -i '1s/^.//' $rules_file
+    fi
+}
+
+stick() {
+    sudo sed -i '1s/^/#/' /etc/udev/rules.d/1-physical-netns.rules && if [ $# -eq 1 ]; then ns=$1; else ns=$(sudo docker ps -l --format="{{.Names}}" | cut -d"-" -f 2); fi; sudo ip netns exec $ns ip link set eth1 netns 1
+}
+
+rstick() {
+    sudo sed -i '1s/^.//' /etc/udev/rules.d/1-physical-netns.rules && if [ $# -eq 1 ]; then ns=$1; else ns=$(sudo docker ps -l --format="{{.Names}}" | cut -d"-" -f 2); fi; sudo ip link set eth1 netns $ns && sudo ip netns exec $ns dhclient eth1
 }
 
 ############################ BBOXX ###########################
