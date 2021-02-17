@@ -103,13 +103,25 @@
 	
 	logclip = "!l() { git log $@ && git log --format='%H' $@ | sed \"s%$% $(basename $(git rev-parse --show-toplevel))/$(git rev-parse --abbrev-ref HEAD)%\" | xclip -selection \"clipboard\"; }; l"
 	
+[diff]
+  tool = meld
+[difftool]
+  prompt = false
+[difftool "meld"]
+  trustExitCode = true
+  cmd = open -W -a Meld --args \"$LOCAL\" \"$REMOTE\"
 [merge]
-        tool = mymeld
-[mergetool "mymeld"]
-	cmd = /home/jshanaha/bin/mymeld $BASE $LOCAL $REMOTE $MERGED
+  tool = vimdiff
+[mergetool]
+  prompt = false
+[mergetool "meld"]
+    trustExitCode = true
+    cmd = open -W -a Meld --args --auto-merge \"$PWD/$LOCAL\" \"$PWD/$BASE\" \"$PWD/$REMOTE\" --output=\"$PWD/$MERGED\"
 [color]
 	ui = true
 [diff]
 	ignoresubmodules = none
 [core]
-	excludesFile = /home/jshanaha/.globalgitignore
+	excludesfile = /Users/john.shanahan/.gitignore_global
+[http]
+	cookiefile = /Users/john.shanahan/.gitcookies

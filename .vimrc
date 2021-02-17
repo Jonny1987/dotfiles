@@ -71,7 +71,7 @@ endif
 call plug#begin()
 Plug 'scrooloose/nerdcommenter'
 Plug 'scrooloose/nerdtree'
-Plug 'vim-syntastic/syntastic'
+"Plug 'vim-syntastic/syntastic'
 Plug 'tpope/vim-surround'
 Plug 'google/yapf', { 'rtp': 'plugins/vim', 'for': 'python' }
 call plug#end()
@@ -116,6 +116,8 @@ endfunction
 map <C-Y> :call yapf#YAPF()<cr>
 imap <C-Y> <c-o>:call yapf#YAPF()<cr>
 
+""" Set tree to directory of current open file
+map <leader>r :NERDTreeFind<cr>
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => General Aliases
@@ -133,6 +135,10 @@ try
     colorscheme desert
 catch
 endtry
+
+if &diff
+    colorscheme murphy
+endif
 
 " Set utf8 as standard encoding and en_US as the standard language
 set encoding=utf8
@@ -239,5 +245,3 @@ au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g
 """"""""""""""""""""""""""""""
 " Always show the status line
 set laststatus=1
-execute pathogen#infect()
-call pathogen#helptags()

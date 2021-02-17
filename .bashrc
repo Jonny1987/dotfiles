@@ -1,12 +1,15 @@
 ############################ MISC ###########################
 ###################################################################
 
-source ~/.bash_profile
+#source ~/.bash_profile
 
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/johnshanahan/.vimpkg/bin
 
+# to get gcloud on cli
+export PATH="$HOME/google-cloud-sdk/bin:$PATH"
+
 # There are some plugs in /usr/bin/.local
-PATH="$PATH:$HOME/.local/bin"
+export PATH="$PATH:$HOME/.local/bin"
 
 # Python won’t try to write .pyc or .pyo files on the import of source modules.
 export PYTHONDONTWRITEBYTECODE=True
@@ -22,7 +25,7 @@ esac
 
 # check the window size after each command and, if necessary,
 # update the values of LINES and COLUMNS.
-shopt -s checkwinsize
+#shopt -s checkwinsize
 
 export VISUAL=vim
 export EDITOR="$VISUAL"
@@ -71,13 +74,40 @@ fi
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
 # sources /etc/bash.bashrc).
-if ! shopt -oq posix; then
-  if [ -f /usr/share/bash-completion/bash_completion ]; then
-    . /usr/share/bash-completion/bash_completion
-  elif [ -f /etc/bash_completion ]; then
-    . /etc/bash_completion
+#if ! shopt -oq posix; then
+  #if [ -f /usr/share/bash-completion/bash_completion ]; then
+    #. /usr/share/bash-completion/bash_completion
+  #elif [ -f /etc/bash_completion ]; then
+    #. /etc/bash_completion
+  #fi
+#fi
+
+getvenv() {
+   echo $VIRTUAL_ENV 
+   dirname $VIRTUAL_ENV
+}
+
+
+function cd() {
+  builtin cd "$@"
+
+  ## If env folder is found then activate the vitualenv
+  if [[ -d ./venv ]] ; then
+    source ./venv/bin/activate
+    eval "$(pyenv init -)"
+  elif [[ -d ./env ]] ; then
+    source ./env/bin/activate
+    eval "$(pyenv init -)"
+  elif [[ -n "$VIRTUAL_ENV" ]] ; then
+    ## check the current folder belong to earlier VIRTUAL_ENV folder
+    # if yes then do nothing
+    # else deactivate
+      parentdir="$(dirname "$VIRTUAL_ENV")"
+      if [[ "$PWD"/ != "$parentdir"/* ]] ; then
+        deactivate
+      fi
   fi
-fi
+}
 
 
 ############################ GAMBLING ###########################
@@ -164,21 +194,8 @@ rstick() {
 # This is used in the python client .env file. If unset causes problems then find another way
 unset USERNAME
 
-# Influx
-alias influxadmin='influx -host 'futureboy-e5d90994.influxcloud.net' -port '8086' -database 'BboxxProduction' -username 'SmartSolarAdmin' -password 'Bb0xxAdmin' -ssl -precision rfc3339'
-alias influxwrite='influx -host 'futureboy-e5d90994.influxcloud.net' -port '8086' -database 'BboxxProduction' -username 'SmartSolarWrite' -password 'Bb0xxWrite' -ssl -precision rfc3339'
-alias influxread='influx -host 'futureboy-e5d90994.influxcloud.net' -port '8086' -database 'BboxxProduction' -username 'SmartSolarRead' -password 'Bb0xxRead' -ssl -precision rfc3339'
-
-# Branch Navigation
-alias bbc="cd $HOME/Documents/SMART-Solar-Client-Python"
-alias bbb="cd $HOME/Documents/SMART-Solar-Backend"
-alias bbs="cd $HOME/Documents/SMART-Solar-Backend/Smart-Solar-Server"
-
 export PATH="$PATH:/space/git/arcanist/bin/"
 export PATH="$PATH:/space/git/devtools/bin/"
-
-# added by Miniconda2 installer
-export PATH="/home/johnshanahan/miniconda2/bin:$PATH"
 
 ############################ COLORS ###########################
 ###################################################################
@@ -187,24 +204,19 @@ export PATH="/home/johnshanahan/miniconda2/bin:$PATH"
 # uncomment for a colored prompt, if the terminal has the capability; turned
 # off by default to not distract the user: the focus in a terminal window
 # should be on the output of commands, not on the prompt
-force_color_prompt=yes
+#force_color_prompt=yes
 
-if [ -n "$force_color_prompt" ]; then
-    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
-	# We have color support; assume it's compliant with Ecma-48
-	# (ISO/IEC-6429). (Lack of such support is extremely rare, and such
-	# a case would tend to support setf rather than setaf.)
-	color_prompt=yes
-    else
-	color_prompt=
-    fi
-fi
-
-#if [ "$color_prompt" = yes ]; then
-    #PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
-#else
-    #PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
+#if [ -n "$force_color_prompt" ]; then
+    #if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+    ## We have color support; assume it's compliant with Ecma-48
+    ## (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+    ## a case would tend to support setf rather than setaf.)
+    #color_prompt=yes
+    #else
+    #color_prompt=
+    #fi
 #fi
+
 
 #if [ "$color_prompt" = yes ]; then
     #PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]$(__git_ps1)\$ '
@@ -212,13 +224,7 @@ fi
     #PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w$(__git_ps1)\$ '
 #fi
 
-if [ "$color_prompt" = yes ]; then
-    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]$(__git_ps1)\$ '
-else
-    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w$(__git_ps1)\$ '
-fi
-
-unset color_prompt force_color_prompt
+#unset color_prompt force_color_prompt
 
 
 ############################ HISTORY ###########################
@@ -227,14 +233,16 @@ unset color_prompt force_color_prompt
 # for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
 export HISTSIZE=100000
 export HISTFILESIZE=200000
+HISTFILE="$HOME/.zsh_history"
+export SAVEHIST=$HISTSIZE
 
 # don't put duplicate lines or lines starting with space in the history.
 # See bash(1) for more options
 export HISTCONTROL=ignoreboth:erasedups  
 
 # When the shell exits, append to the history file instead of overwriting it
-shopt -s histappend
-PROMPT_COMMAND="history -a;$PROMPT_COMMAND"
+#shopt -s histappend
+#PROMPT_COMMAND="history -a;$PROMPT_COMMAND"
 
 # After each command, append to the history file and reread it
 # export PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r"
@@ -244,16 +252,16 @@ PROMPT_COMMAND="history -a;$PROMPT_COMMAND"
 ############################ PLUGINS ###########################
 ###################################################################
 
-source ~/.git-prompt.sh
+#source ~/.git-prompt.sh
 
 if [ -f ~/.git-completion.bash ]; then
   . ~/.git-completion.bash
 fi
 
 # VirtualEnvWrapper
-export WORKON_HOME=$HOME/.virtualenvs
-export PROJECT_HOME=$HOME/Devel
-source /usr/local/bin/virtualenvwrapper.sh
+#export WORKON_HOME=$HOME/.virtualenvs
+#export PROJECT_HOME=$HOME/Devel
+#source /usr/local/bin/virtualenvwrapper.sh
 
 
 ############################ COMMIT NAVIGATION ###########################
@@ -306,6 +314,8 @@ alias dockrmi='docker rmi $(docker images -a -q)'
 ##################### USEFUL ALIASES #####################
 ##########################################################
 
+alias meld="/Applications/Meld.app/Contents/MacOS/Meld"
+
 killport() {
 	lsof -i:$1 | tail -n +2 | awk '{print $2}' | paste -s | xargs kill -9
 }
@@ -314,9 +324,11 @@ killname() {
 	ps aux | grep chrome | cut -d " " -f 3 | xargs kill
 }
 
-alias openrc="sublime-text-3 ~/.bashrc"
+alias brc="$EDITOR ~/.bashrc"
 
-alias opengc="sublime-text-3 ~/.gitconfig"
+alias vrc="$EDITOR ~/.vimrc"
+
+alias gcfg="$EDITOR ~/.gitconfig"
 
 editbash() {
 	term="^$1()"
@@ -371,6 +383,8 @@ cmdff() {
 	fi 
 }
 
+# Needed when install homebrew vim and want this to override native mac vim
+alias vim="/usr/local/bin/vim"
 
 alias sff="cmdff sublime-text-3"
 
@@ -402,29 +416,13 @@ allci() {
 	sfg "--no-pager log -s $1"
 }
 
-sublime() {
-	integer=$RANDOM
-    "$@" > ~/$integer.txt
-    sublime-text ~/$integer.txt
-    rm ~/$integer.txt
-}
-
-
-startpom() {
-    message='
- ____  ____  _____    _    _  _   ____  ___ __  __ _____ _
-| __ )|  _ \| ____|  / \  | |/ / |_   _|_ _|  \/  | ____| |
-|  _ \| |_) |  _|   / _ \ |   /    | |  | || |\/| |  _| | |
-| |_) |  _ <| |___ / ___ \| . \    | |  | || |  | | |___|_|
-|____/|_| \_\_____/_/   \_\_|\_\   |_| |___|_|  |_|_____(_)
-    ' 
-    output=$(echo -e "$message")
-    sleep $1 && notify-send "$output"
+sbr() {
+    git br | grep $1
 }
 
 export PATH=/Library/PostgreSQL/9.6/bin/:$PATH
-#export PATH=/Library/Frameworks/Python.framework/Versions/3.5/bin:/opt/local/bin:/opt/local/sbin:/opt/local/bin:/opt/local/sbin:/Library/Frameworks/Python.framework/Versions/3.5/bin:/usr/local/mysql/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:/Users/jonny/.vimpkg/bin
 
-export PATH="/Library/PostgreSQL/9.6/bin/:/home/johnshanahan/miniconda2/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/johnshanahan/.vimpkg/bin:/home/john/.local/bin:/space/git/arcanist/bin/:/space/git/devtools/bin/:/home/john/.vimpkg/bin"
-
-export PATH="/Library/PostgreSQL/9.6/bin/:/home/johnshanahan/miniconda2/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/johnshanahan/.vimpkg/bin:/home/john/.local/bin:/space/git/arcanist/bin/:/space/git/devtools/bin/:/home/john/.vimpkg/bin:/home/john/.vimpkg/bin"
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+ctags=/usr/local/bin/ctags
