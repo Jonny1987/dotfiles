@@ -3,7 +3,11 @@
 
 #source ~/.bash_profile
 
-export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/johnshanahan/.vimpkg/bin
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:$HOME/.vimpkg/bin
+
+export PATH=$PATH:/usr/local/go/bin
+export PATH="$PATH:`pwd`/dev/flutter/bin"
+export PATH="$PATH:`pwd`/android-studio/bin"
 
 # to get gcloud on cli
 export PATH="$HOME/google-cloud-sdk/bin:$PATH"
@@ -384,8 +388,6 @@ cmdff() {
 }
 
 # Needed when install homebrew vim and want this to override native mac vim
-alias vim="/usr/local/bin/vim"
-
 alias sff="cmdff sublime-text-3"
 
 alias gff="cmdff 'git blame'"

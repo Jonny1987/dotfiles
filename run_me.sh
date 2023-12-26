@@ -1,7 +1,9 @@
 #!/bin/bash
-mv ~/.bashrc ~/.bashrc_orig
-ln -fs ~/dotfiles/.bashrc ~/.bashrc
-mv ~/.vimrc ~/.vimrc_orig
-ln -fs ~/dotfiles/.vimrc ~/.vimrc
-mv ~/.gitconfig ~/.gitconfig_orig
-ln -fs ~/dotfiles/.gitconfig ~/.gitconfig
+[ ! -f ~/.bashr ] || mv ~/.bashrc ~/.bashrc_orig
+ln -fs $(pwd)/.bashrc ~/.bashrc
+
+[ ! -f ~/.vimrc ] || mv ~/.vimrc ~/.vimrc_orig
+ln -fs $(pwd)/.vimrc ~/.vimrc
+
+[ ! -f ~/.gitconfig ] || mv ~/.gitconfig ~/.gitconfig_orig
+ln -fs $(pwd)/.gitconfig ~/.gitconfig
