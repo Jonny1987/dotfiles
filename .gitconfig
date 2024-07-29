@@ -125,3 +125,5 @@
 	excludesfile = /Users/john.shanahan/.gitignore_global
 [http]
 	cookiefile = /Users/john.shanahan/.gitcookies
+[init]
+	defaultBranch = main

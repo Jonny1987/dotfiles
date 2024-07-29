@@ -3,11 +3,18 @@
 
 #source ~/.bash_profile
 
+# block ctrl+d from closing window
+set -o ignoreeof
+
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:$HOME/.vimpkg/bin
 
-export PATH=$PATH:/usr/local/go/bin
-export PATH="$PATH:`pwd`/dev/flutter/bin"
-export PATH="$PATH:`pwd`/android-studio/bin"
+export PATH=/usr/local/go/bin:$PATH
+export PATH="$HOME/dev/flutter/bin:$PATH"
+export PATH="$HOME/android-studio/bin:$PATH"
+export PATH="$HOME/.shorebird/bin:$PATH"
+
+# dart pub
+export PATH="$PATH":"$HOME/.pub-cache/bin"
 
 # to get gcloud on cli
 export PATH="$HOME/google-cloud-sdk/bin:$PATH"
@@ -98,10 +105,8 @@ function cd() {
   ## If env folder is found then activate the vitualenv
   if [[ -d ./venv ]] ; then
     source ./venv/bin/activate
-    eval "$(pyenv init -)"
   elif [[ -d ./env ]] ; then
     source ./env/bin/activate
-    eval "$(pyenv init -)"
   elif [[ -n "$VIRTUAL_ENV" ]] ; then
     ## check the current folder belong to earlier VIRTUAL_ENV folder
     # if yes then do nothing
@@ -245,8 +250,8 @@ export SAVEHIST=$HISTSIZE
 export HISTCONTROL=ignoreboth:erasedups  
 
 # When the shell exits, append to the history file instead of overwriting it
-#shopt -s histappend
-#PROMPT_COMMAND="history -a;$PROMPT_COMMAND"
+shopt -s histappend
+PROMPT_COMMAND="history -a"
 
 # After each command, append to the history file and reread it
 # export PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND$'\n'}history -a; history -c; history -r"
@@ -267,45 +272,6 @@ fi
 #export PROJECT_HOME=$HOME/Devel
 #source /usr/local/bin/virtualenvwrapper.sh
 
-
-############################ COMMIT NAVIGATION ###########################
-###################################################################
-
-alias sfg="git sfg"
-
-alias pu="git pu"
-
-alias mka="git mka"
-
-alias gpul="git gpul"
-
-alias supstash="git supstash"
-
-alias curbr="git curbr"
-
-alias cbr="git cbr"
-
-alias unpus="git unpus"
-
-alias unpul="git unpul"
-
-alias gadd="git gadd" 
-
-alias subd="git subd"
- 
-alias nomrgci="git nomrgci"
-
-alias gdif="git gdif"
-
-alias pb="git pb"
-
-alias gblame="git gblame"
-
-alias gstash="git gstash"
-
-alias spu="git spu"
-
-alias gpul="git gpul"
 
 ##################### DOCKER ALIASES #####################
 ##########################################################
@@ -428,3 +394,14 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 ctags=/usr/local/bin/ctags
+
+
+
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
+export DENO_INSTALL="/home/john/.deno"
+export PATH="$DENO_INSTALL/bin:$PATH"
+export PATH="/home/john/.shorebird/bin:$PATH"
+
+# Created by `pipx` on 2024-06-03 16:08:49
+export PATH="$PATH:/home/john/.local/bin"
